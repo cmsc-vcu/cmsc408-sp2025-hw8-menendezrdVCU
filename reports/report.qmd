@@ -70,9 +70,10 @@ Explore the first 5 records in the country table.
 
 run_sql_and_return_html(cnx,"""
 select
-  `Short Name`
+  *
 from 
   world_bank_data.wdi_country
+limit 5
 """)
 
 ```
@@ -91,7 +92,7 @@ List all non-countries.
 
 run_sql_and_return_html(cnx,"""
 select
-  `Long Name`, `Region`
+  `Short Name`
 from 
   world_bank_data.wdi_country
 where

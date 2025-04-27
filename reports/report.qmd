@@ -27,7 +27,7 @@ cnx,config = create_db_wrapper( config_map )
 ```{python}
 # Do a quick test of the connection and trap the errors better!
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   table_schema, table_name, table_rows
 from
@@ -50,7 +50,7 @@ How many records are in the country table?
 # How many records are in the world_bank_data.wdi_country table?
 # (skills: select, aggregate)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   count(*) as "Row Count"
 from
@@ -68,7 +68,7 @@ Explore the first 5 records in the country table.
 ## Do you see any blanks or missing data?
 ## (skills: select, limit)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   *
 from 
@@ -90,7 +90,7 @@ List all non-countries.
 ## Once you figure it out, write a query to list all the non-countries
 ## (skills: select, where)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Long Name`, `Region`
 from 
@@ -138,7 +138,7 @@ where
 
 ```{python}
 # show number of records
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select count(*) from wdi_country
 """)
 ```
@@ -150,7 +150,7 @@ According to the World Bank, in 2020 there were how many countries in the world?
 ```{python}
 ## (skills: select, aggregate)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select count(*) from wdi_country
 """)
 
@@ -167,7 +167,7 @@ What are all unique values of region in the wdi_country table?
 ## (there are several possible ways to code this in SQL)
 ## (skills: select, aggregate, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Region`
 from
@@ -188,7 +188,7 @@ How many countries are in each region?
 ## How many countries are in each region?
 ## (skills: select, aggregate, group by, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Region`, count(*) as "Count"
 from
@@ -209,7 +209,7 @@ List the country full names and regions for all countries in north america.
 ## List the country full names and regions for all countries in north america
 ## (skills: select, where, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Long Name`, `Region`
 from
@@ -227,7 +227,7 @@ where
 ## What region contains Qatar?  List the region, country short name and full name
 ## (skills: select, where)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Long Name`, `Region`
 from
@@ -246,7 +246,7 @@ where
 ## where the abbr and wb_abbr are different.
 ## (skills: select, where, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Country Code`, `Short Name`, `2-alpha code`, `wb-2 code`
 from
@@ -265,7 +265,7 @@ where
 ## income category in descending order of most countries to least.
 ## (skills: select, aggregate, group by, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
   `Income group`, count(*)
 from
@@ -285,7 +285,7 @@ group by
 ## you will be scored on the number of records returned and the value(s) 
 ## in the first column.
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select `Short Name`
 from
  wdi_country
@@ -315,7 +315,7 @@ commit;
 ```{python}
 ## Now, display the country again to verify the change stuck!
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select `Short Name`, `Income group`
 from wdi_country
 where `Short Name` = 'Venezuela'
@@ -331,7 +331,7 @@ where `Short Name` = 'Venezuela'
 ## region, income group, and no.of.countries.
 ## (skills: select, aggregate, group by, order by)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
  `Region`, `Income Group`, count(*)
 from
@@ -359,7 +359,7 @@ order by
 ## and a column for the row totals.
 ## (skills: select, aggregate, group by, nested query)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
  `Region`, 
  SUM(High) as 'High',
@@ -395,7 +395,7 @@ Group by
 ## PUT THE NUMBER FIRST! (use: count, region name, income group)
 ## (skills: select, aggregate, group by, nested query, order by, limit)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select
 `count`, Region, `Income Group`
 from
@@ -426,7 +426,7 @@ limit
 ## the country code for the Marshall Islands is MHL.
 ## (skills: select, where, subquery)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 SELECT
 `Country Code`, `Short Name`,`Region`, `Income group`
 from wdi_country
@@ -460,7 +460,7 @@ order BY
 ## in Task 14.  (FYI - I get 6 rows in my final table.)
 ## (skills: select, where, subqueries, joins)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 select x.*, case when y.`Region` is null then 0 end as "# Countries"
 from 
     (select * from (SELECT `Region` from wdi_country GROUP BY `Region`) as a cross join (SELECT `Income group` from wdi_country GROUP BY `Income group`) as b order by `Region`, `Income group`) as x
@@ -489,7 +489,7 @@ where y.`Region` is null
 ## slam dunk after this!
 ## (skills: select, where, subqueries, joins, aggregate functions)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
     t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
     t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
@@ -513,7 +513,7 @@ group by t1.`Region`, t1.`Income Group`, pair_cnt, region_cnt, income_cnt, total
 ## print table similar to the table in Task 15, with Income group in the
 ## columns, Region in the rows and Percent of total in each cell of the table.
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
     t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
     t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
@@ -551,7 +551,7 @@ group by Region
 
 ## (This is much simpler than task 20!)
 
-run_sql_and_return_df(cnx,"""
+run_sql_and_return_html(cnx,"""
 with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
     t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
     t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
@@ -568,17 +568,16 @@ Group by `Income group`, income_cnt, total_cnt
 
 1. Reflect on the SQL skills you used throughout these exercises. Which skills do you feel most confident in, and which do you think need more practice? How has this assignment helped you build or reinforce specific SQL competencies?
 
-( response goes here) 
-that aggregate functions need thier own select statment/sql query. This might have been mentioned before and I prorably forgot, but this assignment helped renforce that. I'll keep this in mind when joining tables
+After these exercies, I feel more comfortable with CTEs. This assignment made me notice that aggregate functions need thier own select statment/sql query. This might have been mentioned before and I prorably forgot, but this assignment helped reenforce that. I'll keep this in mind when using aggregate functions in tables.
 
 2. Problem-Solving Approach: Describe your approach to tackling the more complex tasks (like Tasks 18, 23, and 24). How did you break down these problems, and what steps did you take when you encountered challenges? How would you approach a similar problem differently in the future?
 
-( response goes here)
+I broke the bigger table down into smaller tables. Each dealing with one or two columns. I would then join the tables together and see the result each join would give. From the joined tables, I would finish the last columns that remained. For similiar problems in the future, I would probably continue breaking down the bigger table into smaller tables. Each smaller table will have 1 aggregate function unless they can share a GROUP BY. 
 
 
 3. Learning Takeaways: Consider the overall learning experience from this assignment. What were the biggest takeaways about working with SQL for data analysis and transformation? How do you think these skills will apply in real-world scenarios or future coursework?
 
-( response goes here) that aggregate functions need thier own select statment/sql quaery
+The biggest takeaway is how important working incrementally on finding the right query is. It is similar to programming where it is recommenended to build smaller portions of code to then combined them at the end to get the final product. Another takeaway is that subqueries can get messy and convoluted.
 
 
 # README

@@ -286,7 +286,11 @@ group by
 ## in the first column.
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select `Short Name`
+from
+ wdi_country
+where
+ `Income group` is NULL
 """)
 
 ```
@@ -300,6 +304,10 @@ select "doh!" as "Homer says ..." from dual
 ## NOTE - if you get this wrong, all subsequent tables will be wrong!
 
 execute_ddl(cnx,"""
+Update wdi_country
+set `Income group` = 'High income'
+where `Short Name` = 'Venezuela';
+commit;
 """)
 
 
@@ -308,7 +316,9 @@ execute_ddl(cnx,"""
 ## Now, display the country again to verify the change stuck!
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select `Short Name`, `Income group`
+from wdi_country
+where `Short Name` = 'Venezuela'
 """)
 
 ```
@@ -322,7 +332,14 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, order by)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select
+ `Region`, `Income Group`, count(*)
+from
+ wdi_country
+group by
+ `Region`, `Income Group`
+order by
+  `Region`
 """)
 
 ```
@@ -343,7 +360,23 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, nested query)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select
+ `Region`, 
+ SUM(High) as 'High',
+ SUM(Low) as 'Low',
+ SUM(`Lower middle`) as 'Lower middle',
+ SUM(`Upper middle`) as 'Upper middle',
+ SUM(`High`+ `Low`+ `Lower middle`+ `Upper middle`) as 'Total'
+from 
+(select `Region`,`Short Name`,
+ case when `Income group`='High income' then 1 else 0 end as 'High',
+ case when `Income group`='Low income' then 1 else 0 end as 'Low',
+ case when `Income group`='Lower middle income' then 1 else 0 end as 'Lower middle',
+ case when `Income group`='Upper middle income' then 1 else 0 end as 'Upper middle' 
+from wdi_country order by `Region`) as Task15
+Group by
+ `Region`
+
 """)
 
 ```
@@ -363,7 +396,21 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, aggregate, group by, nested query, order by, limit)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select
+`count`, Region, `Income Group`
+from
+(select
+  count(*) as 'count', `Region`, `Income Group`
+from
+ wdi_country
+where
+ `Income Group` = 'Low income'
+group by
+ `Region`, `Income Group`) as Task16
+ order BY
+  `count` DESC
+limit
+ 1
 """)
 
 ```
@@ -380,7 +427,16 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subquery)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+SELECT
+`Country Code`, `Short Name`,`Region`, `Income group`
+from wdi_country
+where 
+`Region`= (SELECT `Region`
+    from wdi_country
+    WHERE `Country code` = 'MHL') 
+    and  `Income group` = (SELECT `Income group` from wdi_country WHERE `Country code` = 'MHL')
+order BY
+    `Country Code`
 """)
 
 ```
@@ -405,7 +461,12 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subqueries, joins)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+select x.*, case when y.`Region` is null then 0 end as "# Countries"
+from 
+    (select * from (SELECT `Region` from wdi_country GROUP BY `Region`) as a cross join (SELECT `Income group` from wdi_country GROUP BY `Income group`) as b order by `Region`, `Income group`) as x
+    left join (SELECT `Region`,`Income Group` from wdi_country GROUP BY `Region`,`Income Group` order by `Region`) as y    
+    on x.`Region`=y.`Region` and x.`Income Group`=y.`Income Group`
+where y.`Region` is null
 """)
 
 ```
@@ -429,7 +490,17 @@ select "doh!" as "Homer says ..." from dual
 ## (skills: select, where, subqueries, joins, aggregate functions)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
+    t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
+    t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
+    t4 as (SELECT count(*) as total_cnt from wdi_country)
+
+select t1.`Region`, t1.`Income Group`, pair_cnt, region_cnt, income_cnt, total_cnt, round(avg((pair_cnt/total_cnt)*100), 1) as "Pct of Total"
+from t1
+    left join t2 on t1.Region=t2.Region
+    left join t3 on t1.`Income Group`=t3.`Income Group`
+    join t4
+group by t1.`Region`, t1.`Income Group`, pair_cnt, region_cnt, income_cnt, total_cnt
 """)
 
 
@@ -443,7 +514,30 @@ select "doh!" as "Homer says ..." from dual
 ## columns, Region in the rows and Percent of total in each cell of the table.
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
+    t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
+    t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
+    t4 as (SELECT count(*) as total_cnt from wdi_country),
+ Task19 as(
+select t1.`Region`, t1.`Income Group`, pair_cnt, region_cnt, income_cnt, total_cnt, round(avg((pair_cnt/total_cnt)*100), 1) as "Pct of Total"
+from t1 left join t2 on t1.Region=t2.Region left join t3 on t1.`Income Group`=t3.`Income Group` join t4
+group by t1.`Region`, t1.`Income Group`, pair_cnt, region_cnt, income_cnt, total_cnt
+), v1 as (
+select Region,
+case when `Income group`='Low income' then `Pct of Total` else 0 end as 'Low Income',
+ case when `Income group`='Lower middle income' then `Pct of Total` else 0 end as 'Lower Middle',
+ case when `Income group`='Upper middle income' then `Pct of Total` else 0 end as 'Upper Middle',
+case when `Income group`='High income' then `Pct of Total` else 0 end as 'High Income'
+from Task19
+)
+select Region,
+sum(`Low Income`) as 'Low Income',
+sum(`Lower Middle`) as 'Low Middle',
+sum(`Upper Middle`) as 'Upper Middle',
+sum(`High Income`) as 'High Income',
+sum(`Low Income`+`Lower Middle`+`Upper Middle`+`High Income`) as 'Row Total'
+from v1
+group by Region
 """)
 
 ```
@@ -458,7 +552,13 @@ select "doh!" as "Homer says ..." from dual
 ## (This is much simpler than task 20!)
 
 run_sql_and_return_df(cnx,"""
-select "doh!" as "Homer says ..." from dual
+with t1 as (select `Region`,`Income Group`, count(*) as pair_cnt from wdi_country group by `Region`, `Income Group`),
+    t2 as (SELECT `Region`,count(*) as region_cnt from wdi_country GROUP BY `Region`),
+    t3 as (SELECT `Income Group`,count(*) as income_cnt from wdi_country Group by `Income group`),
+    t4 as (SELECT count(*) as total_cnt from wdi_country)
+select `Income group`, income_cnt, total_cnt, round(avg((income_cnt/total_cnt)*100), 1) as 'Pct of Total'
+from t3 join t4
+Group by `Income group`, income_cnt, total_cnt
 """)
 
 ```
@@ -468,7 +568,8 @@ select "doh!" as "Homer says ..." from dual
 
 1. Reflect on the SQL skills you used throughout these exercises. Which skills do you feel most confident in, and which do you think need more practice? How has this assignment helped you build or reinforce specific SQL competencies?
 
-( response goes here)
+( response goes here) 
+that aggregate functions need thier own select statment/sql query. This might have been mentioned before and I prorably forgot, but this assignment helped renforce that. I'll keep this in mind when joining tables
 
 2. Problem-Solving Approach: Describe your approach to tackling the more complex tasks (like Tasks 18, 23, and 24). How did you break down these problems, and what steps did you take when you encountered challenges? How would you approach a similar problem differently in the future?
 
@@ -477,7 +578,7 @@ select "doh!" as "Homer says ..." from dual
 
 3. Learning Takeaways: Consider the overall learning experience from this assignment. What were the biggest takeaways about working with SQL for data analysis and transformation? How do you think these skills will apply in real-world scenarios or future coursework?
 
-( response goes here)
+( response goes here) that aggregate functions need thier own select statment/sql quaery
 
 
 # README

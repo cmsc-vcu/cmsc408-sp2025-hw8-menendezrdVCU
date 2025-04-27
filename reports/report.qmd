@@ -73,7 +73,6 @@ select
   `Short Name`
 from 
   world_bank_data.wdi_country
-limit 5
 """)
 
 ```
@@ -96,7 +95,7 @@ select
 from 
   world_bank_data.wdi_country
 where
-  region is NULL
+  `Region` is NULL
 """)
 ```
 

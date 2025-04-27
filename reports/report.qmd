@@ -70,7 +70,7 @@ Explore the first 5 records in the country table.
 
 run_sql_and_return_html(cnx,"""
 select
-  *
+  `Short Name`
 from 
   world_bank_data.wdi_country
 limit 5
@@ -229,7 +229,7 @@ where
 
 run_sql_and_return_html(cnx,"""
 select
-  `Long Name`, `Region`
+  `Region`, `Short Name`, `Long Name`
 from
   wdi_country
 where
@@ -248,7 +248,7 @@ where
 
 run_sql_and_return_html(cnx,"""
 select
-  `Country Code`, `Short Name`, `2-alpha code`, `wb-2 code`
+  `Country Code`, `Short Name`, `2-alpha code`, `wb-2 code`, `Region`
 from
   wdi_country
 where
@@ -286,7 +286,7 @@ group by
 ## in the first column.
 
 run_sql_and_return_html(cnx,"""
-select `Short Name`
+select `Short Name`, `Region`, `Income group`
 from
  wdi_country
 where
@@ -316,7 +316,7 @@ commit;
 ## Now, display the country again to verify the change stuck!
 
 run_sql_and_return_html(cnx,"""
-select `Short Name`, `Income group`
+select `Short Name`, `Region`, `Income group`
 from wdi_country
 where `Short Name` = 'Venezuela'
 """)
